@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <div id="contentTarget">
+        </div>
+
+        <script>
+            var source = new EventSource('/api/device2');
+
+            source.addEventListener("open", (event) => {
+                window.contentTarget.innerHTML += `<p>connected</p>`;
+            });
+
+            source.addEventListener("message", (event) => {
+                window.contentTarget.innerHTML += `<p>received - ${event.data}</p>`;
+            });
+        </script>
+    </body>
+</html>
