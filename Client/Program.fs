@@ -1,27 +1,32 @@
 ﻿open System
 open System.IO
 open System.Net.Http
+open FSharp.Control
+open FSharp.Control.Tasks
 
 [<EntryPoint>]
 let main argv =
     use client = new HttpClient()
     Headers.MediaTypeWithQualityHeaderValue("text/event-stream") |> client.DefaultRequestHeaders.Accept.Add
 
-    let connect() = 
+    let connect() = task {
         printfn "Establishing connection"
         
-        use reader = new StreamReader(client.GetStreamAsync("http://localhost:5000/api/device1") |> Async.AwaitTask |> Async.RunSynchronously)
+        let! source = client.GetStreamAsync("http://localhost:5000/api/device1")
+        use reader = new StreamReader(source)
         
         printfn "Connected"
 
-        let rec readNext() =
-            match reader.EndOfStream with
-            | true -> ()
-            | _ -> 
-                reader.ReadLine() |> printfn "received - %s" 
-                readNext()
+        do!
+            asyncSeq {
+                while not reader.EndOfStream do
+                    let! data = reader.ReadLineAsync() |> Async.AwaitTask
+                    yield data
+            } 
+            |> AsyncSeq.filter (fun s -> s |> System.String.IsNullOrEmpty |> not) 
+            |> AsyncSeq.iterAsync (fun s -> async { printfn "%s" s })
+    }
 
-        readNext()
+    connect().GetAwaiter().GetResult()
     
-    connect()
     0 // return an integer exit code

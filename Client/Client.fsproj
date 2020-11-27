@@ -5,8 +5,17 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <Tailcalls>true</Tailcalls>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FSharp.Control.AsyncSeq" Version="3.0.2" />
+    <PackageReference Include="Ply" Version="0.3.1" />
   </ItemGroup>
 
 </Project>
